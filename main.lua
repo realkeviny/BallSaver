@@ -1,14 +1,15 @@
 local love  = require "love"
 local enemy = require "enemy"
+local button = require "button"
 
 math.randomseed(os.time())
 
 local game = {
     difficulty = 1,
     state = {
-        menu = false,
+        menu = true,
         paused = false,
-        running = true,
+        running = false,
         ended = false
     }
 }
@@ -19,22 +20,48 @@ local player = {
     y = 40
 }
 
-local enemies = {
-    
+local buttons = {
+    menu_state = {}
 }
+
+local enemies = {}
+
+local function startNewGame()
+    game.state["menu"] = false
+    game.state["running"] = true
+
+    table.insert(enemies,1,enemy())
+end
+
+function love.mousepressed(x,y,button,isTouch,presses)
+    if not game.state['running'] then
+        if button == 1 then
+            if game.state["menu"] then
+                for index in pairs(buttons.menu_state) do
+                    buttons.menu_state[index]:checkPressed(x,y,player.radius)
+                end
+            end
+        end
+    end
+end
 
 function love.load()
     love.window.setTitle("Ball Saver")
     love.mouse.setVisible(false)
 
-    table.insert(enemies,1,enemy())
+    buttons.menu_state.play_game = button("Play!",startNewGame,nil,130,40)
+    buttons.menu_state.settings = button("Settings",nil,nil,130,40)
+    buttons.menu_state.exit_game = button("Exit",love.event.quit,nil,130,40)
 end
 
-function love.update()
+
+function love.update(dt)
     player.x,player.y = love.mouse.getPosition()
 
-    for i = 1, #enemies do
-        enemies[i]:move(player.x,player.y)
+    if game.state["running"] then
+        for i = 1, #enemies do
+            enemies[i]:move(player.x,player.y)
+        end
     end
 end
 
@@ -46,6 +73,10 @@ function love.draw()
             enemies[i]:draw()
         end
         love.graphics.circle("fill",player.x,player.y,player.radius)
+    elseif game.state["menu"] then
+        buttons.menu_state.play_game:draw(10,20,50,10)
+        buttons.menu_state.settings:draw(10,80,40,10)
+        buttons.menu_state.exit_game:draw(10,140,50,10)
     end
 
     if not game.state["running"] then
