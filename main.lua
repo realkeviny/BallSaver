@@ -76,6 +76,18 @@ function love.mousepressed(x,y,button,isTouch,presses)
     end
 end
 
+function love.keypressed()
+    if game.state["running"] then
+        if love.keyboard.isDown("escape") then
+            changeGameState("paused")
+        end
+    elseif game.state["paused"] then
+        if love.keyboard.isDown("escape") then
+            changeGameState("running")
+        end
+    end
+end
+
 function love.load()
     love.window.setTitle("Ball Saver")
     love.mouse.setVisible(false)
@@ -135,6 +147,9 @@ function love.draw()
         buttons.ended_state.exit_game:draw(love.graphics.getWidth() / 2.25,love.graphics.getHeight()/1.33,22,10)
 
         love.graphics.printf(math.floor(game.points),fonts.large.font,0,love.graphics.getHeight() / 2 - fonts.massive.size,love.graphics.getWidth(),"center")
+    elseif game.state["paused"] then
+        love.graphics.setFont(fonts.large.font)
+        love.graphics.printf("Paused",fonts.large.font,0,love.graphics.getHeight() / 2 - fonts.massive.size,love.graphics.getWidth(),"center")
     end
 
     if not game.state["running"] then
